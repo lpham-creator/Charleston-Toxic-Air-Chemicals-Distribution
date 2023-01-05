@@ -1,0 +1,166 @@
+---
+title: "SDS 192 Group Contract"
+author:
+ - Nadira Talayee
+ - Patrizia Picado
+ - Linh Pham
+date: "Last updated on `r Sys.Date()`"
+output: html_document
+---
+
+Working in groups can be both incredibly rewarding and incredibly challenging. The most effective collaborations explicitly outline group roles, expectations, and procedures in advance to coordinate how the group will operate, to establish mechanisms of accountability, and to mitigate the risk of conflict. It is important that, throughout the semester, you address group concerns as they come up. This may involve assigning someone to check in with team members that are falling behind, establishing expectations for attending office hours and asking for help, calling team meetings to discuss issues, or reaching out to the instructor to resolve enduring and unresolved conflicts.		
+
+# ROLES
+
+## Who will be responsible for scheduling meetings and hosting Zoom calls? 
+
+Patrizia Picado
+
+## Who will be responsible for facilitating discussion during team meetings?
+
+All of us
+
+## Who will be responsible for taking notes and recording decisions during meetings?
+
+Linh Pham
+
+## Who will be responsible for emailing the professor with questions?
+
+Nadira Talayee
+
+## Who will be responsible for requesting group assignment extensions?
+
+Patrizia Picado
+
+## Who will be responsible for setting deadlines for drafts? 
+
+Linh Pham
+
+## Who will be responsible for checking in with team members when drafts are late?
+
+Patrizia Picado
+
+## Who will be responsible for reviewing all materials before submission?
+
+All of us.
+
+## Who will be responsible for submitting assignments?
+
+Nadira Talayee
+
+
+# COLLABORATIVE WORKSPACES
+
+## Where will the team keep meeting notes? 
+
+We will keep our meeting notes in Google docs shared among all of us.
+
+## Where will the team store drafts of assignments? 
+
+We will store our own drafts in our branches in R.
+
+## Through what channels will the team communicate when not meeting?
+
+We will communicate through text message and Slack.
+
+## What is the expected response time for emails and messages? 
+
+We will respond to eachother within 8 hours. 
+
+
+# MEETINGS
+
+## How often will the team meet? 
+
+We will meet on Mondays, Wednesdays, and Fridays.
+
+## What days/times will the team meet?
+
+We will meet for an hour on Mondays, Wednesdays, and Fridays.
+
+## How long will meetings be?
+
+The meetings will be 1-2 hours long and we will extend it if needed.
+
+## How will you make decisions during meetings (e.g. consensus, a vote)?
+
+We will make sure we communicate clearly and take votes.
+		
+## What strategies will you use to stay on task during meetings?
+
+We will focus on our part of the project, and check-in with each other regularly.
+
+## How should team members inform each other if they are going to be late to a meeting?
+
+We will communicate through Slack and text-message in a 4 hour time-limit.
+			
+## When is it ok for a team member to skip a meeting? How soon should they inform the group?
+
+If the group member has an emergency and they should communicate 4 hours before the meeting in advance.
+
+## What will you do if a group member is chronically absent from or late to meetings?
+
+We will communicate and let them know respectfully.
+
+## What will you do if a group member is consistently not participating in meetings?
+
+We will communicate and let them know respectfully. If the situation gets worse we will let Lindsay know.
+
+
+## What are your expectations for respectful engagement and communication during meetings and in collaborative workspaces? What will you do if a member of your team does not meet these expectations?
+
+All team members are expected to listen respectfully to others. If a team member doesn't meet these expectations we will communicate with them. 
+
+
+# ASSIGNMENTS
+
+## How will you ensure that all team members fully understand assignment expectations? What will you do if your team is unsure how to complete an assignment?
+
+We will go through the assignments together and ensure all the group members fully understand it. If any of us are unclear about what the assignment asks, they will ask the other group members.
+
+## How will you ensure that all team members are contributing equitably to assignments?
+
+We will go through the assignment together and assign equal tasks for each of us.
+
+## How soon in advance of deadlines do you expect all team members to share drafts of their work?
+
+We all agree on a date. We plan to have a draft by the 2nd or 4th of Dec and our final project by the Dec 9th.
+
+## What will be your process for reviewing each other’s work before submission?
+
+We will do cross-check for the assignments. Nadira will be reviewing Patrizia's, Patrizia will review Linh's and Linh will review Nadira's.
+
+## What will you do if the quality of a team member’s work does not meet the group’s expectations? When is it permissible to revise another team member’s work?
+
+We ensure that all our chunks are reviewed by another team member. If a team member doesn't know how to approach the assignment, we will revise their work and help them.  
+
+## What are your expectations around punctuality regarding group deadlines? How should team members inform each other if they need an extension?
+
+We try to set a deadline and meet that deadline. If any conflicts arise, we will communicate with our team members and Lindsay in advance. 
+
+## What will you do if a student is consistently late in submitting draft work?
+
+We will be direct but respectful in communicating with them. If the team member is  consistently being late, we will let Lindsay know.
+
+## What will you do if you discover that a team member’s work violates the Academic Code of Conduct?
+
+We should let them know and communicate with Lindsay if the team member doesn't listen.
+
+# SIGNATURES
+
+* I participated in drafting the standards, roles, and procedures outlined in this document.
+* I agree to abide by the terms and conditions outlined in this document.			
+* I understand that failing to abide by the terms and conditions outlined in this document may impact my grade.
+ 							
+Signature: Nadira Talayee
+Date: `r format(Sys.time(), '%d %B, %Y')`
+
+Signature: Patrizia Picado
+Date: `r format(Sys.time(), '%d %B, %Y')`
+
+Signature: Linh Pham
+Date `r format(Sys.time(), '%d %B, %Y')`
+
+
+Once you are done, in the Git tab in your Environment pane, stage and commit your changes, and then push them to your GitHub repo.  
+

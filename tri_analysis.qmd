@@ -1,0 +1,246 @@
+---
+title: "SDS 192 Mini-Project 3"
+subtitle: "SDS 192"
+author: 
+- name: Patrizia Picado
+  affiliation: Smith College
+- name: Nadira Talayee
+  affiliation: Smith College
+- name: Linh Pham
+  affiliation: Smith College
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+editor: 
+  mode: source
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+output: 
+  html_document:
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
+    theme: lumen
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(leaflet)
+library(RColorBrewer)
+library(sf)
+```
+
+```{r}
+# Imported TRI data here 
+tri_data <- read_csv(("dataset/2020_wv.csv"),name_repair = make.names)
+# Filtered data to Kanawha county
+tri_data_kanawha <- tri_data |>
+filter(X7..COUNTY == "KANAWHA")
+# Function to convert releases from grams to pounds
+tri_data_kanawha <- tri_data_kanawha %>% mutate(across(48:49,~case_when(X47..UNIT.OF.MEASURE == "Grams"~.x*0.0022,TRUE~.x)))
+```
+
+```{r import}
+#Imported demographics data using st_read function from sf package to read the shapefile
+demographics <- st_read("dataset/final_places_data.shp") |>
+    st_transform(4326) 
+```
+
+
+```{r import}
+#Imported census data using st_read function from sf package to read the shapefile
+demographics_census <- st_read("dataset/demographic_census.shp") 
+```
+
+
+```{r import}
+#Joined data sets through the location id
+joined_demographics <- demographics_census |> 
+  left_join(demographics |> st_drop_geometry(), by = c("GEOID" = "locationna"))
+```
+
+
+```{r}
+tri_data_kanawha <- tri_data_kanawha |>
+  st_as_sf(coords = c("X13..LONGITUDE","X12..LATITUDE"), crs = 4269) %>%
+  st_transform(crs = 4326)
+```
+
+
+# Analysis
+
+Linh:
+In my part, I noticed that the columns for Fugitive Air chemical releases and Stack Air chemiccal releases are separated, which makes it hard to compare the their sums. I decided to pivot longer all the air chemicals release type into a single column, using *pivot_longer()* on all the columns that has the "AIR" suffix, which are called by the command *ends_with("AIR")*. This new column now include the values of both Fugitive Air and Stack Air, and I set its name to "Total Release Amount" using *values_to*.
+
+Subsequently, I want to look into the sum of all Fugitive Air and Stack Air releases, so I let R calculate the sum for me using *summarize(sum(`Total Release Amount`))*. After that, seeing that the rows still have numbers and letters in them that may confuse readers, I changed the rows' name into "Fugitive Air" and "Stack Air" for greater readability, using *str_replace()*. I also ensure that the titles are all capitalized with the first letters by using *mutate across* to apply the function *str_to_title* on all values that have characters in them. Lastly, I notice that after calculating the sum of "Total Release Amount", the column name has changed into "sum("Total Release Amount")", so I set it to "Total Release Amount" again using *colnames* and specify index 2 in the argument. Lastly, I call *air_release* to observe the sum of Fugitive Air releases and Stack Air releases relatively.
+
+```{r}
+#Linh
+#Pivot longer the data to find the total amount of air chemical release by type
+air_release <- tri_data_kanawha |> pivot_longer(cols = ends_with("AIR"), 
+                    names_to = "Release Type", 
+                    values_to = "(Rounded) Total Release Amount") |>
+  group_by(`Release Type`) |>
+  summarize(sum(`(Rounded) Total Release Amount`)) |>
+  mutate(`Release Type` = str_replace(`Release Type`, "X48..5.1...", "")) |>
+  mutate(`Release Type` = str_replace(`Release Type`, "X49..5.2...", "")) |>
+  #Round the numbers using mutate across
+  mutate(across(where(is.numeric), round) )
+#Change the format of the air type so it's more readable
+air_release$`Release Type` <- str_replace(air_release$`Release Type`, "FUGITIVE.AIR", "Fugitive Air")
+air_release$`Release Type` <- str_replace(air_release$`Release Type`, "STACK.AIR", "Stack Air")
+colnames(air_release)[2] <- "(Rounded) Total Release Amount"
+
+air_release
+```
+
+Noticing that there's a sizable difference between the amount of Fugitive Air releases and Stack Air releases, I decide to make a plot to visualize this difference using *ggplot()*. I choose to use *geom_col()*, not geom_bar() in my plot to visualize the difference, as with geom_col() I can specify the y-axis as the total chemical release amount. I set the x-axis to Air Release Type, and y-axis to Total Release Amount in air_release in the *aes()* function, and I also let the color of the columns signify the air release type with the argument *fill=*. Lastly, I add titles to my plot to ensure that all five elements of context are included with *labs()*. The resulting plot visualizes the amount of chemical air releases by type in Kanawha County in West Virginia, 2020 in the TRI dataset. The plot has a legend that explains which column stands for which air release type, as well as titles on the x-axis and y-axis to help readers understand.
+
+```{r}
+#Create graph to visualize the difference in release amount and add labels
+ggplot(air_release, aes(x = `Release Type`, y = `(Rounded) Total Release Amount`, fill = `Release Type`)) +
+      geom_col() +
+      theme_minimal() +
+      labs(title = "TRI Onsite Air Releases by Type in Kanawha County, West Virginia, USA, 2020",
+       x = "Type of Onsite Air Release",
+       y = "Total Release Amount in Pounds (Rounded)")  
+```
+
+Nadira:
+```{r}
+#I created a function that gives the top facilities in each city in the Kanawha County based on the sum of the fugitive air released by the facility. Some of the variable/column names are renamed to be easier to deal with. I group_by the function by the facility ID wich is a unique number to each facility, facility name and used summarize to find the sum of total fugitive air. 
+
+ function_fugitive <- function(City) {
+   x <- tri_data_kanawha |>
+  rename(FRS_ID = X3..FRS.ID,
+         CITY = X6..CITY,
+         FUGITIVE_AIR = X48..5.1...FUGITIVE.AIR,
+         FACILITY_NAME =X4..FACILITY.NAME)|>
+  filter(CITY== City) |>
+  select(FRS_ID,CITY,FACILITY_NAME,FUGITIVE_AIR) |>
+  group_by(FRS_ID,CITY,FACILITY_NAME)|>
+  summarize(TOTAL_FUGITIVE_AIR_RELEASE = sum(FUGITIVE_AIR))|>
+  arrange(desc(TOTAL_FUGITIVE_AIR_RELEASE)) |>
+  head(10)
+  return(x)
+ }
+
+#map the function on the city column and combine the results into a dataframe
+total_fugitive <- unique(tri_data_kanawha$X6..CITY) |>
+  map_df(function_fugitive)
+```
+
+
+
+
+The above function gives us the top facilities' name and ID in each city at the Kanawha county based on the sum of total amount of fugitive air released in descending order. South Charleston followed be Belle are the cities with the most amount of facilities with fugitive air release. On the other hand, though Dunbar city has only once facility, Altivia Institute Facilities, the amount of fugitive air released by that facility is greater than that of the top facility in South Charleston. 
+
+```{r}
+#I created a function that gives the top facilities in each city in the Kanawha County based on the sum of the fugitive air released by the facility. Some of the variable/column names are renamed to be easier to deal with. I group_by the function by the facility ID wich is a unique number to each facility, facility name and used summarize to find the sum of total fugitive air. 
+
+ function_stack <- function(City) {
+   x <- tri_data_kanawha |>
+  rename(FRS_ID = X3..FRS.ID,
+         CITY = X6..CITY,
+         FACILITY_NAME =X4..FACILITY.NAME,
+         STACK_AIR =X49..5.2...STACK.AIR)|>
+  filter(CITY== City) |>
+  select(FRS_ID,CITY,FACILITY_NAME,STACK_AIR) |>
+  group_by(FRS_ID,CITY,FACILITY_NAME)|>
+  summarize(TOTAL_STACK_AIR_RELEASE= sum(STACK_AIR))|>
+  arrange(desc(TOTAL_STACK_AIR_RELEASE)) |>
+  head(10)
+  return(x)
+ }
+
+total_stack <- unique(tri_data_kanawha$X6..CITY) |>
+  map_df(function_stack)
+```
+
+Patrizia:
+For this map, I worked on creating the code chunk that visualized Kanawha county in West Virginia, United States. To do this I first called the *leaflet()* function to set the original view and add base map tiles. Then, I looked for the coordinates corresponding to Kanawha county and called the *addProviderTiles* to add the tile layer *CartoDB.Positron* to the map. After establishing a base map I added the *addPolygons* function to accurately demonstrate census data. I called our data and filled the color with pink. As seen in the map, the area covered in pink is the Kanawha County region in West Virginia, United States. 
+
+
+```{r analysis-1, warning=FALSE}
+library(RColorBrewer)
+pal_bin <- colorBin(palette = "GnBu", 
+                        domain = joined_demographics$totalpopul, bins = 4)
+#pal_bin_color <- colorBin(palette = "Blues", 
+                        #domain = tri_data_geo$X48..5.1...FUGITIVE.AIR, bins = 12)
+
+#second plot 
+map_demographic <- leaflet(width = "100%") |>
+  setView(lat = 38.3428208, lng = -81.5089835, zoom = 10) |> 
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = joined_demographics,
+              fillColor = ~pal_bin(totalpopul), 
+              stroke = FALSE,
+              fillOpacity = 0.5,
+              label = ~NAME)|>
+  addCircleMarkers(data = total_stack,
+                   radius = total_stack$TOTAL_STACK_AIR_RELEASE/1000.000, 
+                   weight = 0.5, 
+                   color = "black",
+                   opacity = 0.3,
+                   fillColor = "black",
+                   fillOpacity = 0.3,
+                 label= total_stack$FACILITY_NAME)|>
+  addLegend(data = joined_demographics, 
+            values = ~totalpopul,
+            position = "bottomright",
+            pal = pal_bin,
+            title = "Total Population with Current Asthma
+            in Kanawha County, West Virginia 2020",
+            bins = 5)
+
+map_demographic
+```
+
+After establishing the area in which we were going to focus for the analysis of this project, I began to work on utilizing polygon mapping to depict the areas in which the highest total population had current asthma health issues in 2020. To do this I first created a color function that I could later apply to help understand the boundaries between the diverse census tracks and their relationship with the percentage of total amount of asthma population. I opted to use bins because it arranges each grouping so there is less variation in each class or shading. However, it still manages to group the missing data so the grey sections are parts were there was no information regarding the total population with asthma health problems. Furthermore, I called the same base map code I had done previously and continued by adding the *addPolygons* function since we are working with geometrical measures and utilized data retrieved from shapefiles. Then, I utilized the previously color formula to represent the value of the total population variable via intensity of color in bins. In addition, I added the labels criteria to establish the names for each census track to better understand the areas in the map being analyzed. Finally, I added the legends to give context to the map and make the visualization readable and comprehensible. 
+
+```{r}
+#Created a polygon mapping to visualize the total population with current asthma issues in Kanawha county. I utilized the colorBin function to represent the value of the aggregated numeric variable via intensity of color in bins. Then, I added details to the map and established labels to better understand the diverse census tracks utilized for the analysis. 
+library(RColorBrewer)
+pal_bin <- colorBin(palette = "YlOrRd", 
+                        domain = joined_demographics$totalpopul, bins = 4)
+#pal_bin_color <- colorBin(palette = "Blues", 
+                        #domain = tri_data_geo$X48..5.1...FUGITIVE.AIR, bins = 12)
+
+#second plot 
+map_demographic <- leaflet(width = "100%") |>
+  setView(lat = 38.3428208, lng = -81.5089835, zoom = 10) |> 
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = joined_demographics,
+              fillColor = ~pal_bin(totalpopul), 
+              stroke = FALSE,
+              fillOpacity = 0.5,
+              label = ~NAME)|>
+  addCircleMarkers(data = total_fugitive,
+                   radius = total_fugitive$TOTAL_FUGITIVE_AIR_RELEASE/1000.000, 
+                   weight = 0.5, 
+                   color = "white",
+                   opacity = 1, 
+                   fillColor = "black",
+                   fillOpacity = 0.3,
+                 label= total_fugitive$FACILITY_NAME)|>
+  addLegend(data = joined_demographics, 
+            values = ~totalpopul,
+            position = "bottomleft",
+            pal = pal_bin,
+            title = "Total Population with Current Asthma in Kanawha County, West Virginia 2020")
+map_demographic
+
+```
+
+
+
+
+
+
+
+
+
+
